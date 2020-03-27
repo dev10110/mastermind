@@ -119,7 +119,8 @@ var tries_remaining = 10;
  * Routes Definitions
  */
 
-// home
+
+// home (most of the stuff happens here)
 app.get("/", (req, res) => {
 
   res.render(path.join(__dirname + '/index'), {
@@ -157,10 +158,13 @@ app.post('/guess', [
 
   var scoreString = scoreN.toString() + "N " + scoreP.toString() + "P";
 
+
   if (scoreP == 4) {
-    scoreString = "YOU'VE WON!!";
+    status = "You've WON!!"
     tries_remaining = 0;
     console.log('Player won!')
+    res.redirect("/");
+    return;
   }
 
   guesses.unshift({
@@ -168,12 +172,12 @@ app.post('/guess', [
     score: scoreString
   })
 
-
+  tries_remaining--;
   if (tries_remaining == 0) {
     console.log('Player lost');
+    status = "Game over! The correct solution was " + solution.toString();
   }
 
-  tries_remaining--;
 
   res.redirect("/");
 
@@ -189,6 +193,7 @@ app.post('/sol', (req, res) => {
     score: "Solution!"
   });
 
+  status = "You've asked for the solution."
   res.redirect("/");
 
 });
