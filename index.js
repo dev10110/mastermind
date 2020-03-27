@@ -13,29 +13,19 @@ const {
   validationResult
 } = require('express-validator');
 
-//const { sanitizeBody } = require('express-validator/filter');
-
 
 /**
  * App Variables
  */
 
-const app = express();
-const port = process.env.PORT || "8000";
+ const app = express();
+ const port = process.env.PORT || "8000";
 
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
+ app.use(bodyParser.urlencoded({
+   extended: true
+ }));
 
-app.use(bodyParser.json());
-
-// create application/json parser
-//var jsonParser = bodyParser.json()
-
-// create application/x-www-form-urlencoded parser
-//var urlencodedParser = bodyParser.urlencoded({ extended: false })
-
-
+ app.use(bodyParser.json());
 
 /**
  *  App Configuration
@@ -45,33 +35,45 @@ app.use(bodyParser.json());
 app.set('view engine', 'ejs');
 
 
+/**
+ * Helper functions
+ */
+
+// generate a random integer in a range.
 function randomInt(low, high) {
   return Math.floor(Math.random() * (high - low) + low)
 }
 
+// convert to string that is exactly 4 chars long
 function padToFour(number) {
   // add four zeros to the front, and then take the last four digits
   number = ("0000" + number.toString()).slice(-4);
   return number;
 }
 
+// generate a candidate solution to the mastermind game
 function generateSolution() {
   var int = randomInt(0, 9999);
   return padToFour(int);
 }
 
+// calculate the score of a given guess
+// uses the global variable solution to check against.
 function calcScore(guess) {
 
   var scoreP = 0;
   var scoreN = 0;
 
+  // a temporary copy of solution is made so it can be modified
   var solution_tmp = solution;
 
+  // check for correct guess in correct space
   var i = 0;
   for (g of guess) {
     if (solution[i] == g) {
+      // ooh its correct!
       scoreP++;
-      // replace it with something arbitrary to help with next step
+      // replace it with "." or "," to help with next step
       guess = guess.slice(0, i) + "." + guess.slice(i + 1, 4);
       solution_tmp = solution_tmp.slice(0, i) + "," + solution_tmp.slice(i + 1, 4);
       console.log('Right position at ' + i.toString())
@@ -79,6 +81,7 @@ function calcScore(guess) {
     i++;
   }
 
+  // now check for correct guess in wrong space
   var i = 0;
   for (g of guess) {
     if (solution_tmp.includes(g)) {
@@ -88,9 +91,11 @@ function calcScore(guess) {
     i++;
   }
 
+  // return an array of scores
   return [scoreN, scoreP]
 }
 
+// reset the game
 function reset() {
   solution = generateSolution();
   console.log(solution);
@@ -99,23 +104,22 @@ function reset() {
   status = "";
 }
 
+// define the useful global variables
+
+// instead of using a database, the variable is just stored locally,
+// resets everytime the website's reset() is called.
+var guesses = [
+  //{ guess: "", score: "" },
+];
+var status = "";
+var solution = generateSolution();
+var tries_remaining = 10;
 
 /**
  * Routes Definitions
  */
 
-
-var solution = generateSolution();
-
-// instead of using a database, the variable is just stored locally,
-// resets everytime the website is refreshed.
-var guesses = [
-  //{ guess: "", score: "" },
-];
-var status = "";
-
-var tries_remaining = 10;
-
+// home
 app.get("/", (req, res) => {
 
   res.render(path.join(__dirname + '/index'), {
@@ -126,20 +130,24 @@ app.get("/", (req, res) => {
 
 });
 
+// process the guess from the form
 app.post('/guess', [
-  // username must be an email
+  // sanitize and validate the input
   check('guess').escape().trim().isNumeric().isLength({
     max: 4,
     min: 4
   })
 ], (req, res) => {
 
+  // if it isnt clean, restate the instructions
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
       status = "You must guess a 4 digit number";
       res.redirect("/");
       return;
   }
+
+  // else, score and print the guess
     status = "";
     var guess = padToFour(req.body.guess);
 
@@ -151,6 +159,8 @@ app.post('/guess', [
 
     if (scoreP == 4) {
       scoreString = "YOU'VE WON!!";
+      tries_remaining = 0;
+      console.log('Player won!')
     }
 
     guesses.unshift({
@@ -158,16 +168,19 @@ app.post('/guess', [
       score: scoreString
     })
 
-    tries_remaining--;
+
     if (tries_remaining == 0) {
-      console.log('fin');
+      console.log('Player lost');
     }
+
+    tries_remaining--;
+
     res.redirect("/");
 
 })
 
 
-
+// handle a request for the true solution
 app.post('/sol', (req, res) => {
   tries_remaining = 0;
 
@@ -180,6 +193,7 @@ app.post('/sol', (req, res) => {
 
 });
 
+// handle a request for a new game
 app.post('/new', (req, res) => {
   reset();
   res.redirect("/");
