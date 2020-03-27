@@ -18,14 +18,14 @@ const {
  * App Variables
  */
 
- const app = express();
- const port = process.env.PORT || "8000";
+const app = express();
+const port = process.env.PORT || "8000";
 
- app.use(bodyParser.urlencoded({
-   extended: true
- }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
- app.use(bodyParser.json());
+app.use(bodyParser.json());
 
 /**
  *  App Configuration
@@ -142,40 +142,40 @@ app.post('/guess', [
   // if it isnt clean, restate the instructions
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-      status = "You must guess a 4 digit number";
-      res.redirect("/");
-      return;
+    status = "You must guess a 4 digit number";
+    res.redirect("/");
+    return;
   }
 
   // else, score and print the guess
-    status = "";
-    var guess = padToFour(req.body.guess);
+  status = "";
+  var guess = padToFour(req.body.guess);
 
-    score = calcScore(guess);
-    var scoreN = score[0];
-    var scoreP = score[1];
+  score = calcScore(guess);
+  var scoreN = score[0];
+  var scoreP = score[1];
 
-    var scoreString = scoreN.toString() + "N " + scoreP.toString() + "P";
+  var scoreString = scoreN.toString() + "N " + scoreP.toString() + "P";
 
-    if (scoreP == 4) {
-      scoreString = "YOU'VE WON!!";
-      tries_remaining = 0;
-      console.log('Player won!')
-    }
+  if (scoreP == 4) {
+    scoreString = "YOU'VE WON!!";
+    tries_remaining = 0;
+    console.log('Player won!')
+  }
 
-    guesses.unshift({
-      guess: padToFour(req.body.guess),
-      score: scoreString
-    })
+  guesses.unshift({
+    guess: padToFour(req.body.guess),
+    score: scoreString
+  })
 
 
-    if (tries_remaining == 0) {
-      console.log('Player lost');
-    }
+  if (tries_remaining == 0) {
+    console.log('Player lost');
+  }
 
-    tries_remaining--;
+  tries_remaining--;
 
-    res.redirect("/");
+  res.redirect("/");
 
 })
 
