@@ -1,0 +1,94 @@
+<!-- views/pages/index.ejs -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</head>
+<body>
+<div class="container">
+<div class="row center-align">
+<h1>MasterMind</h1>
+
+<p>A simple game of logic and luck.<br>
+  Guess a number, four in length.<br>
+  For every matching number, you score 1P<br>
+  For every number appearing elsewhere, 1N is all you get.<br>
+  Guess, guess as much as you may<br>
+  But in ten tries, I win the game.
+</p>
+<p>
+Created by <a href="https://dev10110.github.io">Dev</a>
+</p>
+
+<form action="/actions" method="post">
+    <button class="btn waves-effect waves-light" type="submit" name="action" formaction="/new">New Game
+      <i class="material-icons right"></i>
+    </button>
+</form>
+
+</div>
+
+<div class="row center-align">
+   <form action="/guess/" method="post" class="col s12">
+     <div class="row center-align">
+       <% if (tries>0) { %>
+       <div class="input-field col s6 offset-s3">
+            <input id="guess" name="guess" type="text" data-length="10" autofocus="autofocus">
+            <label for="guess">Guess here, if you dare...</label>
+        </div>
+        <% } %>
+        <div class="input-field col s6 offset-s3">
+          <% if (tries>0) { %>
+          <button class="btn waves-effect waves-light" type="submit" name="action">Guess (<%=tries%>)
+            <i class="material-icons right"></i>
+          </button>
+          <% } %>
+          <button class="btn waves-effect waves-light btn-flat" type="submit" name="action" formaction="/sol">Solution
+            <i class="material-icons right"></i>
+          </button>
+        </div>
+     </div>
+   </form>
+
+
+    <p><%=status%></p>
+
+
+ </div>
+
+<div class="col s6 offset-s3">
+  <table class="highlight centered">
+    <thead>
+      <tr>
+        <th>Guess</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% guesses.forEach(function(guess) { %>
+          <tr>
+            <td><%= guess.guess %></td>
+            <td><%= guess.score %></td>
+          </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+<div class="row center-align">
+  <p>
+  </p>
+</div>
+
+</div>
+
+
+</body>
+
+
+</html>
